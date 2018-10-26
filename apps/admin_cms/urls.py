@@ -13,5 +13,6 @@ urlpatterns = [
     path('news_pub/', views.NewsPubView.as_view(), name="NewsPubView"),
     path('up_token/', views.up_token, name="up_token"),
     path('upload_file/', views.upload_file, name="upload_file"),
+    path('news_manage/', views.News_ManageView.as_view(), name="news_manage"),
 
 ]

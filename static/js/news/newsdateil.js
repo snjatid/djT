@@ -100,8 +100,7 @@ $(function () {
 });
 
 
-
-/*== 封装 JQ 的 Ajax ==*/
+  /*== 封装 JQ 的 Ajax ==*/
 function selfAjax(url, method, data, successCallback){
   $.ajax({
     url,

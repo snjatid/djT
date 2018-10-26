@@ -13,5 +13,6 @@ urlpatterns = [
     path('new/detail/<int:news_id>',views.news_detail, name="news_detail"),
     path('news/add-comment/',views.AddNewsCommentView.as_view(), name="news_comment"),
     path('news/comment/',views.comment_list_with_news, name="comment_list_with_news"),
+    path('news/list/',views.new_list, name="news_list"),
     path('search', search, name="search"),
 ]

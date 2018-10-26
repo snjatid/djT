@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.shortcuts import render,reverse,redirect
 from django.http import HttpResponse,JsonResponse
 from django.views import View
-from .forms import LoginForm,RegisterForm,VerifyForm
+from .forms import LoginForm,RegisterForm,VerifyForm,PasswordForm
 from django.views.decorators.csrf import csrf_protect,csrf_exempt
 from django.utils.decorators import method_decorator
 from utils.captcha.captcha import Captcha
@@ -89,6 +89,7 @@ class RegisterView(View):
 
 
 class ResetPasswordView(View):
+
     def get(self,request):
         return render(request,'account/resetpassword.html')
 
@@ -99,12 +100,30 @@ class ResetPasswordView(View):
             sms_captcha = request.POST.get("sms_captcha")
             user = User.objects.filter(telephone=telephone)
             if user:
-                return json_status.result(message="OK")
 
+                return json_status.result(message="OK")
+            return json_status.params_error(message="用户未注册")
         return json_status.params_error(message=form.get_error())
 
+class UpdatePasswordView(View):
 
 
+    def get(self,request):
+
+        return render(request,'account/updatepassword.html')
+
+    def post(self,request):
+        pwd = request.POST.get("pwd")
+        rest_pwd = request.POST.get("rest_pwd")
+        print(pwd, rest_pwd)
+        form = PasswordForm(request.POST)
+        if pwd==rest_pwd:
+            print(form.is_valid())
+            if form.is_valid():
+
+                return json_status.result(message="密码修改成功")
+            return json_status.params_error(message=form.get_error())
+        return  json_status.params_error(message="两次密码不一至")
 
 
 

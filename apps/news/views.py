@@ -6,14 +6,15 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from apps.news.forms import NewsCommentForm
 from utils import json_status
-from apps.news.serializers import NewsCommentSerializers
+from apps.news.serializers import NewsCommentSerializers,NewsSerializers
 from django.contrib.auth.decorators import login_required
 from utils.decorators import ajax_login_required
+from django.conf import settings
 
 def index(request):
     news_tags = NewTag.objects.filter(is_delete=True).all()
     # defer不查新闻内容字段,  select_related预先查询，会先执行
-    newses = News.objects.defer("content").select_related("tag","author").filter(is_delete=True).all()
+    newses = News.objects.defer("content").select_related("tag","author").filter(is_delete=True).all()[0: settings.ONE_PAGE_NEWS_COUNT]
     content = {"news_tags":news_tags,"newses":newses}
 
     from datetime import datetime
@@ -22,6 +23,23 @@ def index(request):
     print(now())                #2018-10-22 02:18:38.779494+00:00  会跟据settings里的时区默认减 8
 
     return render(request,'news/index.html',context=content)
+
+
+def new_list(request):
+    page = int(request.GET.get("page",1))
+    tag_id = int(request.GET.get("tag_id",0))
+    start_page = settings.ONE_PAGE_NEWS_COUNT * (page-1)
+    end_page  = start_page + settings.ONE_PAGE_NEWS_COUNT
+    print(start_page, end_page, tag_id)
+    if tag_id:
+        newses = News.objects.defer("content").select_related("tag", "author").filter(is_delete=True, tag=tag_id).all()[start_page:end_page]
+        print("tag_id",newses)
+    else:
+        newses = News.objects.defer("content").select_related("tag","author").filter(is_delete=True).all()[start_page:end_page]
+    serializer = NewsSerializers(newses, many=True)
+
+    return json_status.result(message="ok",data={"newses": serializer.data})
+
 
 
 def news_detail(request,news_id):

@@ -2,14 +2,16 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
 from django.views import View
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from utils import json_status
 from apps.news.models import NewTag, News
 from django.http import QueryDict, JsonResponse
-import os
 from django.conf import settings
 from qiniu import Auth
 from .forms import NewsPubForm
+from utils.decorators import ajax_login_required
+from django.core.paginator import Paginator
+import os
 
 
 # Create your views here.
@@ -125,7 +127,7 @@ def up_token(request):
     print(token)
     return JsonResponse({"uptoken": token})
 
-
+@ajax_login_required
 def upload_file(request):
     file = request.FILES.get("upload_file")
     print(file)                 #文件对象
@@ -147,3 +149,81 @@ def upload_file(request):
         #返回http://192.168.160.130:8001 + /media/+file_name
         print(file_url)
     return json_status.result(data = {"file_url":file_url})
+
+
+class News_ManageView(View):
+    def get(self,request):
+
+        p = request.GET.get("p",1)
+        newses = News.objects.filter().all()
+        news_tag = NewTag.objects.filter(is_delete=True).all()
+        paginator = Paginator(newses,2)             #传入新闻对象，2表示每页几条新闻
+        print('===============')
+        print('总数量', paginator.count)
+        print('可以被迭代的页码', paginator.page_range)
+        print('总页数', paginator.num_pages)
+        print('===============')
+        page = paginator.page(p)    #表示当前在第几页数据
+        print('**********************')
+        print('当前处在的页码', page.number)
+        print('当页数据', page.object_list)
+        print('是否具有下一页', page.has_next())
+        print('是否具有上一页', page.has_previous())
+        if page.has_next():
+            print('下一页的页码', page.next_page_number())
+        if page.has_previous():
+            print('上一页的页码', page.previous_page_number())
+        print('是否具有其他页面', page.has_other_pages())
+        print('开始位置的索引', page.start_index())
+        print('结束位置的索引', page.end_index())
+        print('**********************')
+
+        page_data = self.get_page_data(paginator, page)
+
+        context = {
+            'newses': page.object_list,
+            'news_tag': news_tag,
+            'paginator': paginator,
+            'page': page,
+
+        }
+        context.update(page_data)
+        return render(request,'admin/news/news_manage.html',context=context)
+
+    @staticmethod
+    def get_page_data(paginator, page, around_count=2):
+
+        current_page = page.number
+
+        total_page = paginator.num_pages
+
+        left_has_more = False
+        right_has_more = False
+
+        # 当前页码左边 的页码
+        left_start_index = current_page - around_count
+        left_end_index = current_page
+        if current_page <= around_count + around_count +1:
+            left_pages = range(1, left_end_index)
+        else:
+            left_has_more = True
+            left_pages = range(left_start_index, left_end_index)
+
+        # 右边页码的位置
+        right_start_index = current_page + 1
+        right_end_index = current_page + around_count + 1
+        if current_page >= total_page - around_count -around_count:
+            right_pages = range(right_start_index, total_page)
+        else:
+            right_has_more = True
+            right_pages = range(right_start_index, right_end_index)
+        print(left_pages)
+        print(right_pages)
+        return {
+            'current_page':current_page,
+            'total_page':total_page,
+            'left_pages':left_pages,
+            'left_has_more':left_has_more,
+            'right_pages': right_pages,
+            'right_has_more':right_has_more
+        }

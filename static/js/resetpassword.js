@@ -4,6 +4,8 @@ $(function () {
         let $telephone = $("input[name=telephone]");
         let reg = /^((1[3-9][0-9])+\d{8})$/;
 
+
+
         $smsCaptchaBtn.click(function () {
         let $status = $(this)[0].hasAttribute('disabled');
         if ($status) {
@@ -79,11 +81,49 @@ $(function () {
                 success: res => {
                     console.log(res);
                     if (res["code"] === 200) {
-
                         window.message.showSuccess("手机验证成功");
                         setTimeout(() => {
-                            window.location.href = '/account/login';
+                            window.location.href = '/account/update_password';
                         }, 1500)
+
+                    } else {
+                        window.message.showError(res["msg"])
+                    }
+                },
+                error: err => {
+                    logError(err)
+                }
+            })
+
+        });
+
+
+
+        //更新密码
+        let $update_password = $(".password-btn");
+
+
+        $update_password.click(function () {
+            let pwd = $("input[name=pwd]").val();
+            let rest_pwd = $("input[name=rest_pwd]").val();
+
+            console.log(`1 ${pwd}  2 ${rest_pwd} `);
+
+            $.post({
+                url: "/account/update_password",
+                data: {
+                    "pwd": pwd,
+                    "rest_pwd": rest_pwd,
+                },
+                success: res => {
+                    console.log(res);
+                    if (res["code"] === 200) {
+
+                        window.message.showSuccess("密码修改成功");
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1500)
+
                     } else {
                         window.message.showError(res["msg"])
                     }
@@ -96,3 +136,6 @@ $(function () {
         });
 
 });
+
+
+

@@ -11,6 +11,7 @@ urlpatterns = [
     path('register', views.RegisterView.as_view(), name="register"),
     path('logout', views.logoutView, name="logout"),
     path('reset_password', views.ResetPasswordView.as_view(), name="reset_password"),
+    path('update_password', views.UpdatePasswordView.as_view(), name="update_password"),
     path('graph_captcha', views.graph_captcha, name="graph_captcha"),
     path('sms_captcha', views.sms_captcha, name="sms_captcha"),
 

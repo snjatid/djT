@@ -160,3 +160,5 @@ SECRET_KEY = 'fu9eptvN5h7PQbucefbknR2vsNsvZktIfr4zAx3h'
 
 # 空间名
 BUCKET_NAME = 'snjatid'
+
+ONE_PAGE_NEWS_COUNT = 2

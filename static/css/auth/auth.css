@@ -99,6 +99,7 @@
 }
 
 .form-contain .login-btn,
+.form-contain .password-btn,
 .form-contain .register-btn,
 .form-contain .done-btn {
   display: block;
